@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Seating Portal</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+
+body{
+font-family:Arial,sans-serif;
+background:#f3f4f6;
+margin:0;
+min-height:100vh;
+display:flex;
+flex-direction:column;
+text-align:center;
+}
+
+/* HEADER */
+
+.header{
+background:#05235c;
+padding:14px 20px 18px;
+box-shadow:0 4px 12px rgba(0,0,0,.25);
+color:white;
+}
+
+.header h2,
+.header h3,
+.header h4{
+margin:4px 0;
+}
+
+.header h2{
+font-size:18px;
+font-weight:bold;
+}
+
+.header h3{
+color:#facc15;
+font-size:14px;
+}
+
+.header h4{
+font-size:12px;
+font-weight:normal;
+}
+
+/* MAIN */
+
+.main-content{
+flex:1;
+}
+
+/* CARD */
+
+.card{
+background:#fafafa;
+color:black;
+padding:18px;
+border-radius:15px;
+width:92%;
+max-width:430px;
+margin:18px auto;
+box-shadow:0 2px 10px rgba(0,0,0,.12);
+}
+
+/* SEARCH */
+
+.search-box{
+display:flex;
+justify-content:center;
+align-items:center;
+gap:10px;
+flex-wrap:wrap;
+margin-top:5px;
+}
+
+input{
+
+width:68%;
+padding:12px;
+
+border-radius:8px;
+border:1px solid #d1d5db;
+
+font-size:14px;
+outline:none;
+
+text-transform:uppercase;
+
+}
+
+button{
+
+padding:12px 20px;
+
+background:#032c7a;
+color:white;
+
+border:none;
+border-radius:8px;
+
+cursor:pointer;
+
+font-size:14px;
+font-weight:bold;
+
+}
+
+button:hover{
+background:#0a3e9f;
+}
+
+/* RESULT */
+
+.result{
+text-align:left;
+margin-top:18px;
+}
+
+.result h2{
+font-size:20px;
+margin-bottom:15px;
+word-break:break-word;
+}
+
+.result p{
+margin:7px 0;
+font-size:14px;
+}
+
+.label{
+color:#082f75;
+font-weight:bold;
+}
+
+.value{
+color:black;
+}
+
+.info-box{
+margin-top:10px;
+border:1px solid #d1d5db;
+border-radius:10px;
+padding:9px 11px;
+background:white;
+line-height:1.35;
+font-size:13.5px;
+}
+
+/* REPORT */
+
+.highlight{
+background:#edf2f7;
+border:1px solid #d6dde7;
+padding:11px;
+border-radius:10px;
+margin-top:10px;
+line-height:1.4;
+
+font-size:14px;     /* increase text size */
+font-weight:600;    /* slightly bold */
+}
+
+/* ERROR */
+
+.error{
+color:red;
+font-weight:bold;
+}
+
+/* FOOTER */
+
+.footer{
+margin-top:auto;
+padding:10px;
+font-size:12px;
+color:#6b7280;
+}
+
+/* MOBILE */
+
+@media(max-width:600px){
+
+input{
+width:60%;
+font-size:14px;
+}
+
+button{
+width:auto;
+font-size:14px;
+padding:12px 18px;
+}
+
+.result h2{
+font-size:18px;
+}
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="main-content">
+
+<div class="header">
+
+<h2>BITS EXAMINATION</h2>
+
+<h3>CANDIDATE SEATING ARRANGEMENT</h3>
+
+<h4>CENTRE : JAIN UNIVERSITY</h4>
+
+<h4>🗓️Date: 24-05-2026 |🕘Shift : EN (4:30 PM)</h4>
+
+</div>
+
+
+<div class="card">
+
+<div class="search-box">
+
+<input
+id="idInput"
+placeholder="ENTER FULL BITS ID (EX:2025BT3...)"
+autofocus>
+
+<button onclick="search()">
+Search
+</button>
+
+</div>
+
+<div id="result" class="result"></div>
+
+</div>
+
+</div>
+
+
+<div class="footer">
+
+DEVELOPED BY SUDARSAN NB
+
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+
+let data={};
+
+fetch("seating1.xlsx")
+
+.then(res=>res.arrayBuffer())
+
+.then(fileData=>{
+
+let workbook=XLSX.read(fileData);
+
+let sheet=
+workbook.Sheets[
+workbook.SheetNames[0]
+];
+
+let json=
+XLSX.utils.sheet_to_json(sheet);
+
+json.forEach(row=>{
+
+if(!row["Candidate ID"])
+return;
+
+let id=
+row["Candidate ID"]
+.toString()
+.trim()
+.toUpperCase();
+
+data[id]={
+
+name:row["Candidate Name"],
+
+program:row["Program Name"],
+
+floor:row["Floor"],
+
+block:row["Block"],
+
+lab:row["Lab"],
+
+system:row["System Number"]
+
+};
+
+});
+
+})
+
+.catch(()=>{
+
+document.getElementById("result").innerHTML=`
+
+<p class="error">
+❌ Error loading Excel file
+</p>
+
+`;
+
+});
+
+
+function search(){
+
+if(Object.keys(data).length===0){
+
+document.getElementById("result").innerHTML=
+"⏳ Loading data... Please wait";
+
+return;
+
+}
+
+let id=document
+.getElementById("idInput")
+.value
+.trim()
+.toUpperCase();
+
+
+if(!id){
+
+document.getElementById("result").innerHTML=`
+
+<p class="error">
+❌ Please enter Candidate ID
+</p>
+
+`;
+
+return;
+
+}
+
+
+let s=data[id];
+
+if(!s){
+
+document.getElementById("result").innerHTML=`
+
+<p class="error">
+❌ Student not found! Please recheck your BITS ID.
+</p>
+
+<p>
+If data not found 👉 Contact Help Desk:
+4th Floor, A-WING, Lab 401
+</p>
+
+`;
+
+return;
+
+}
+
+
+document.getElementById("result").innerHTML=`
+
+<h2>${s.name||"-"}</h2>
+
+<div class="info-box">
+
+<p><span class="label">📖 Program:</span>
+<span class="value">${s.program||"-"}</span></p>
+
+<p><span class="label">🏢 Floor:</span>
+<span class="value">${s.floor||"-"}</span></p>
+
+<p><span class="label">🏣 Block:</span>
+<span class="value">${s.block||"-"}</span></p>
+
+<p><span class="label">🪟 Lab:</span>
+<span class="value">${s.lab||"-"}</span></p>
+
+<p><span class="label">🖥️ System No:</span>
+<span class="value">${s.system||"-"}</span></p>
+
+</div>
+
+<div class="highlight">
+
+📍 Report to
+<b>${s.floor||"-"}</b> Floor,
+<b>${s.block||"-"}</b>,
+Lab <b>${s.lab||"-"}</b>,
+System <b>${s.system||"-"}</b>
+
+</div>
+
+<div class="info-box">
+
+✅ <b>Mandatory:</b><br>
+Take a screenshot and show it to the invigilator.
+
+</div>
+
+<div class="info-box">
+
+ℹ️ <b>Note:</b><br>
+For any queries please visit Room 401, A-Wing, 4th Floor.
+
+</div>
+
+`;
+
+}
+
+document
+.getElementById("idInput")
+.addEventListener("keydown",function(e){
+
+if(e.key==="Enter"){
+
+e.preventDefault();
+
+search();
+
+}
+
+});
+
+</script>
+
+</body>
+</html>
